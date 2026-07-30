@@ -1,0 +1,1762 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem Absensi & Penilaian Raport Siswa (7, 8, 9)</title>
+  <style>
+    :root {
+      --navy-950: #0a1128;
+      --navy-900: #0f172a;
+      --navy-800: #142248;
+      --navy-700: #1a2c5c;
+      --gold-400: #f4d47c;
+      --gold-500: #d4af37;
+      --gold-600: #b8912c;
+      --cream-50: #fbf9f4;
+      --ink-900: #1c2333;
+      --ink-600: #5a6478;
+      --emerald: #1f9d6f;
+      --sky: #2596be;
+      --amber: #d4a017;
+      --rose: #c94a4a;
+      --border-soft: #ece6d6;
+      --shadow-lux: 0 24px 60px -16px rgba(10,17,40,0.28), 0 4px 14px rgba(10,17,40,0.08);
+      --shadow-soft: 0 3px 12px rgba(20,34,72,0.06);
+      --ease: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * { box-sizing: border-box; font-family: 'Segoe UI', 'Trebuchet MS', Tahoma, Geneva, Verdana, sans-serif; }
+
+    ::selection { background: rgba(212,175,55,0.35); color: var(--navy-950); }
+
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, var(--gold-500), var(--gold-600)); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--gold-600); }
+
+    html { overflow-x: hidden; }
+    body {
+      margin: 0; padding: 36px 20px;
+      display: flex; justify-content: center;
+      background:
+        radial-gradient(circle at 12% 0%, rgba(212,175,55,0.11), transparent 45%),
+        radial-gradient(circle at 100% 15%, rgba(37,150,190,0.10), transparent 42%),
+        radial-gradient(circle at 50% 100%, rgba(212,175,55,0.06), transparent 50%),
+        linear-gradient(160deg, var(--navy-950) 0%, var(--navy-900) 45%, #101a38 100%);
+      background-attachment: fixed;
+      min-height: 100vh;
+      color: var(--ink-900);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    .container {
+      background: linear-gradient(180deg, #ffffff 0%, var(--cream-50) 100%);
+      width: 100%; max-width: 1290px;
+      padding: 34px 38px 30px;
+      border-radius: 20px;
+      border: 1px solid rgba(212,175,55,0.32);
+      box-shadow: var(--shadow-lux);
+      position: relative;
+      overflow: hidden;
+    }
+    .container::before {
+      content: "";
+      position: absolute; top: 0; left: 0; right: 0; height: 5px;
+      background: linear-gradient(90deg, var(--gold-600), var(--gold-400) 35%, var(--gold-500) 65%, var(--gold-600));
+    }
+
+    h2, h3, h4 { color: var(--navy-900); margin-top: 0; letter-spacing: 0.2px; }
+    h2 { font-weight: 800; letter-spacing: 1px; }
+    h3 { font-weight: 700; font-size: 16px; border-left: 4px solid var(--gold-500); padding-left: 12px; margin-bottom: 14px; }
+    h4 { font-weight: 700; color: var(--navy-800); font-size: 14.5px; margin-bottom: 10px; }
+    .text-center { text-align: center; }
+
+    .section-box {
+      background: #ffffff;
+      border: 1px solid var(--border-soft);
+      padding: 22px 24px;
+      border-radius: 14px;
+      margin-bottom: 22px;
+      box-shadow: var(--shadow-soft);
+      transition: box-shadow 0.25s var(--ease), border-color 0.25s var(--ease);
+    }
+    .section-box:hover { box-shadow: 0 8px 24px rgba(20,34,72,0.09); border-color: rgba(212,175,55,0.4); }
+
+    .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+    button, .btn-upload {
+      padding: 10px 19px; border: none; border-radius: 9px;
+      font-weight: 700; cursor: pointer; transition: all 0.25s var(--ease);
+      font-size: 13px; display: inline-flex; align-items: center; gap: 6px;
+      letter-spacing: 0.2px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    button:hover, .btn-upload:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(0,0,0,0.18); filter: brightness(1.05); }
+    button:active, .btn-upload:active { transform: translateY(0); box-shadow: 0 2px 6px rgba(0,0,0,0.14); }
+
+    .btn-primary   { background: linear-gradient(135deg, var(--navy-700), var(--navy-900)); color: #fff; }
+    .btn-success   { background: linear-gradient(135deg, #26b381, var(--emerald)); color: #fff; }
+    .btn-warning   { background: linear-gradient(135deg, var(--gold-400), var(--gold-600)); color: #3a2e05; }
+    .btn-danger    { background: linear-gradient(135deg, #d9605f, var(--rose)); color: #fff; }
+    .btn-secondary { background: linear-gradient(135deg, #6b7488, #4a536b); color: #fff; }
+    .btn-info      { background: linear-gradient(135deg, #35b0dc, var(--sky)); color: #fff; }
+
+    input[type="file"] { display: none; }
+
+    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .form-grid-3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; }
+
+    label { color: var(--ink-600); }
+
+    input, select {
+      padding: 10px 12px; border: 1px solid #dcd6c3; border-radius: 9px;
+      font-size: 13px; width: 100%; background: #fffefb; color: var(--ink-900);
+      transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+    }
+    input:hover, select:hover { border-color: #c9c1a3; }
+    input:focus, select:focus {
+      outline: none; border-color: var(--gold-500);
+      box-shadow: 0 0 0 3px rgba(212,175,55,0.16);
+    }
+    input.score-input { width: 54px; text-align: center; padding: 6px; font-weight: 700; }
+
+    table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 14px; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-soft); border: 1px solid var(--border-soft); }
+    th, td { border-bottom: 1px solid #f1ecdc; border-right: 1px solid #f4f0e2; padding: 10px 7px; text-align: left; font-size: 12px; }
+    th:last-child, td:last-child { border-right: none; }
+    th {
+      background: linear-gradient(135deg, var(--navy-800), var(--navy-950));
+      color: var(--gold-400); text-align: center; font-weight: 700;
+      letter-spacing: 0.4px; text-transform: uppercase; font-size: 10.5px;
+      padding: 12px 6px; border-bottom: none;
+    }
+    tbody tr { background: #fff; transition: background 0.18s var(--ease); }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:nth-child(even) { background: #faf8f0; }
+    tbody tr:hover { background: #fbf0d4; }
+    td.center { text-align: center; }
+
+    .badge { padding: 5px 12px; border-radius: 20px; font-size: 10.5px; color: white; font-weight: 700; letter-spacing: 0.4px; box-shadow: 0 2px 5px rgba(0,0,0,0.18); }
+    .Hadir { background: linear-gradient(135deg, #26b381, var(--emerald)); }
+    .Izin  { background: linear-gradient(135deg, var(--gold-400), var(--amber)); color: #3a2e05; }
+    .Sakit { background: linear-gradient(135deg, #35b0dc, var(--sky)); }
+    .Alpa  { background: linear-gradient(135deg, #d9605f, var(--rose)); }
+
+    .status-info { font-size: 13px; color: var(--emerald); font-weight: 700; margin-top: 9px; }
+    .status-alert { font-size: 13px; color: var(--rose); font-weight: 700; margin-top: 9px; }
+
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; margin-bottom: 20px; }
+    .card-box {
+      padding: 18px 12px; border-radius: 14px; text-align: center; color: white; font-weight: 700;
+      box-shadow: 0 10px 22px -8px rgba(0,0,0,0.28); position: relative; overflow: hidden;
+      letter-spacing: 0.3px; font-size: 12px; text-transform: uppercase;
+      transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+    }
+    .card-box:hover { transform: translateY(-3px); box-shadow: 0 16px 28px -8px rgba(0,0,0,0.32); }
+    .card-box::after {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(160deg, rgba(255,255,255,0.20), rgba(255,255,255,0) 60%);
+    }
+    .card-box.total { background: linear-gradient(135deg, #545e78, var(--navy-900)); }
+    .card-box.hadir { background: linear-gradient(135deg, #26b381, var(--emerald)); }
+    .card-box.sakit { background: linear-gradient(135deg, #35b0dc, var(--sky)); }
+    .card-box.izin  { background: linear-gradient(135deg, var(--gold-400), var(--amber)); color: #3a2e05; }
+    .card-box.alpa  { background: linear-gradient(135deg, #d9605f, var(--rose)); }
+    .card-number { font-size: 23px; font-weight: 800; margin-top: 6px; text-transform: none; letter-spacing: 0; }
+
+    /* Tabs Navigation */
+    .tabs {
+      display: flex; margin-bottom: 24px; flex-wrap: wrap; gap: 6px;
+      background: linear-gradient(135deg, var(--navy-900), var(--navy-950));
+      padding: 9px; border-radius: 14px;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.35), 0 6px 18px rgba(10,17,40,0.25);
+    }
+    .tab-btn {
+      padding: 12px 20px; background: none; border: none; font-weight: 700;
+      color: #9aa5c3; cursor: pointer; border-radius: 9px; font-size: 13.5px;
+      transition: all 0.25s var(--ease); letter-spacing: 0.2px;
+    }
+    .tab-btn:hover { color: #fff; background: rgba(255,255,255,0.07); }
+    .tab-btn.active {
+      color: var(--navy-950);
+      background: linear-gradient(135deg, var(--gold-400), var(--gold-500));
+      box-shadow: 0 5px 14px rgba(212,175,55,0.45);
+    }
+
+    .sub-tabs { display: flex; gap: 8px; margin-bottom: 20px; background: #eee7d3; padding: 7px; border-radius: 11px; flex-wrap: wrap; }
+    .sub-tab-btn { padding: 10px 20px; background: transparent; border: none; border-radius: 8px; font-weight: 700; color: var(--navy-800); cursor: pointer; font-size: 13px; transition: all 0.22s var(--ease); }
+    .sub-tab-btn:hover { background: rgba(212,175,55,0.16); }
+    .sub-tab-btn.active { background: linear-gradient(135deg, var(--navy-700), var(--navy-900)); color: var(--gold-400); box-shadow: 0 4px 10px rgba(20,34,72,0.32); }
+
+    .tab-content, .sub-tab-content { display: none; }
+    .tab-content.active, .sub-tab-content.active { display: block; animation: fadeIn 0.4s var(--ease); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .login-box {
+      max-width: 420px; margin: 40px auto;
+      background: linear-gradient(180deg, #ffffff, var(--cream-50));
+      border: 1px solid rgba(212,175,55,0.4);
+      padding: 36px 32px; border-radius: 18px; text-align: center;
+      box-shadow: var(--shadow-lux);
+      animation: fadeIn 0.4s var(--ease);
+    }
+    .login-box input { margin-bottom: 14px; text-align: center; }
+
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(10,17,40,0.62); backdrop-filter: blur(3px);
+      display: flex; align-items: center; justify-content: center; z-index: 1000;
+      animation: fadeIn 0.2s var(--ease);
+    }
+    .modal-content {
+      background: linear-gradient(180deg, #fff, var(--cream-50));
+      padding: 30px; border-radius: 16px; width: 90%; max-width: 420px;
+      box-shadow: var(--shadow-lux);
+      border: 1px solid rgba(212,175,55,0.35);
+      animation: fadeIn 0.3s var(--ease);
+    }
+
+    .signature-container { display: flex; justify-content: space-between; margin-top: 48px; padding: 0 24px; }
+    .signature-box { text-align: center; width: 250px; }
+    .signature-space { height: 60px; }
+
+    /* Highlight Rata-rata */
+    .bg-avg { background: linear-gradient(135deg, #fdf3d7, #f7e6b0) !important; font-weight: 800; color: var(--navy-900); }
+
+    @media print {
+      body { background: #fff; padding: 0; }
+      .container { box-shadow: none; max-width: 100%; width: 100%; padding: 0; border: none; }
+      .container::before { display: none; }
+      .no-print { display: none !important; }
+      table { font-size: 10px; }
+      th { background: #333 !important; color: #fff !important; -webkit-print-color-adjust: exact; }
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 10px 6px; }
+      .container { padding: 16px 12px; border-radius: 14px; }
+
+      h2 { font-size: 18px !important; line-height: 1.3; }
+      h3 { font-size: 14px; padding-left: 10px; }
+      h4 { font-size: 13px; }
+
+      .form-grid-3 { grid-template-columns: 1fr; }
+      .form-grid-2 { grid-template-columns: 1fr; }
+
+      /* Scrollable pill-style tab bar instead of wrapping */
+      .tabs {
+        flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch;
+        justify-content: flex-start; padding: 6px; gap: 4px;
+        scrollbar-width: none;
+      }
+      .tabs::-webkit-scrollbar { display: none; }
+      .tab-btn { padding: 9px 14px; font-size: 12px; white-space: nowrap; flex-shrink: 0; }
+
+      .sub-tabs {
+        flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; padding: 5px;
+      }
+      .sub-tabs::-webkit-scrollbar { display: none; }
+      .sub-tab-btn { padding: 8px 14px; font-size: 11.5px; white-space: nowrap; flex-shrink: 0; }
+
+      .section-box { padding: 14px 14px; border-radius: 12px; margin-bottom: 16px; }
+
+      .btn-group { gap: 8px; }
+      .btn-group button, .btn-group .btn-upload { flex: 1 1 auto; min-width: 0; font-size: 12px; padding: 10px 12px; justify-content: center; }
+
+      /* Tables scroll horizontally instead of squeezing */
+      table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 10px; }
+      table thead, table tbody { display: table; width: 100%; }
+      table { min-width: 100%; }
+      th, td { white-space: nowrap; font-size: 11px; padding: 8px 6px; }
+      th { font-size: 9.5px; }
+
+      .card-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px; }
+      .card-box { padding: 12px 8px; font-size: 10.5px; border-radius: 10px; }
+      .card-number { font-size: 18px; }
+
+      input, select { font-size: 13px; padding: 9px 10px; }
+      input.score-input { width: 44px; }
+
+      .login-box { padding: 26px 18px; margin: 20px auto; max-width: 100%; }
+
+      .modal-content { padding: 20px; width: 92%; }
+
+      .signature-container { flex-direction: column; align-items: center; gap: 26px; margin-top: 30px; padding: 0; }
+      .signature-box { width: 100%; max-width: 260px; }
+
+      /* header crest */
+      .header-crest { width: 42px !important; height: 42px !important; font-size: 20px !important; margin-bottom: 8px !important; }
+    }
+
+    @media (max-width: 380px) {
+      h2 { font-size: 16px !important; }
+      .tab-btn { padding: 8px 11px; font-size: 11px; }
+      .sub-tab-btn { padding: 7px 11px; font-size: 11px; }
+      .card-grid { grid-template-columns: repeat(2, 1fr); }
+      .card-number { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  
+  <!-- Header Judul Sekolah -->
+  <div class="text-center" style="margin-bottom: 26px; padding-bottom: 20px; border-bottom: 1px solid var(--border-soft);">
+    <div class="header-crest" style="display:inline-flex; align-items:center; justify-content:center; width:52px; height:52px; border-radius:50%; background:linear-gradient(135deg, var(--gold-400), var(--gold-600)); box-shadow:0 6px 16px rgba(212,175,55,0.4); font-size:24px; margin-bottom:10px;">🎓</div>
+    <h2 style="margin-bottom: 6px; font-size: 24px; background: linear-gradient(135deg, var(--navy-900), var(--navy-700)); -webkit-background-clip: text; background-clip: text; color: transparent;">SISTEM ABSENSI &amp; AKADEMIK SISWA ONLINE</h2>
+    <p style="margin: 0; color: var(--gold-600); font-size: 13px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;">Tahun Ajaran 2026/2027</p>
+  </div>
+
+  <!-- Tab Navigasi Utama -->
+  <div class="tabs no-print">
+    <button class="tab-btn active" onclick="switchMainTab('absen-main-tab', this)">📝 Absensi Harian</button>
+    <button class="tab-btn" onclick="switchMainTab('rekap-main-tab', this)">📊 Rekap Absensi</button>
+    <button class="tab-btn" onclick="switchMainTab('nilai-main-tab', this)">🎯 Penilaian & Raport</button>
+    <button class="tab-btn" onclick="switchMainTab('backup-main-tab', this)">💾 Backup & Restore</button>
+    <button class="tab-btn" onclick="switchMainTab('kelola-main-tab', this)">🔒 Pengaturan Admin</button>
+  </div>
+
+  <!-- ================= TAB UTAMA 1: ABSENSI HARIAN SISWA ================= -->
+  <div id="absen-main-tab" class="tab-content active">
+    <div class="sub-tabs no-print">
+      <button class="sub-tab-btn active" onclick="switchAbsenSubTab('absen-k7', this, 'Kelas 7')">🏫 Absen Kelas 7</button>
+      <button class="sub-tab-btn" onclick="switchAbsenSubTab('absen-k8', this, 'Kelas 8')">🏫 Absen Kelas 8</button>
+      <button class="sub-tab-btn" onclick="switchAbsenSubTab('absen-k9', this, 'Kelas 9')">🏫 Absen Kelas 9</button>
+    </div>
+
+    <div class="section-box no-print">
+      <h3 id="absenFormTitle">📝 Input Kehadiran Siswa - Kelas 7</h3>
+      <form id="attendanceForm" onsubmit="handleSaveAttendance(event)">
+        <div class="form-grid-3">
+          <div>
+            <label style="font-size: 12px; font-weight: bold;">Pilih Nama Siswa:</label>
+            <input list="activeStudentDatalist" id="fullNameInput" placeholder="Ketik / Pilih Nama Siswa..." required autocomplete="off">
+            <datalist id="activeStudentDatalist"></datalist>
+          </div>
+
+          <div>
+            <label style="font-size: 12px; font-weight: bold;">Status Kehadiran:</label>
+            <select id="statusInput">
+              <option value="Hadir">Hadir</option>
+              <option value="Izin">Izin</option>
+              <option value="Sakit">Sakit</option>
+              <option value="Alpa">Alpa</option>
+            </select>
+          </div>
+
+          <div style="display: flex; align-items: flex-end;">
+            <button type="submit" class="btn-primary" style="width: 100%;">💾 Simpan Absen</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; margin-bottom: 10px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <label style="font-weight: bold; font-size: 13px;">Tampilkan Jurnal:</label>
+        <select id="journalViewFilter" style="width: 160px;" onchange="renderAttendanceTable()">
+          <option value="Aktif">Kelas Saat Ini</option>
+          <option value="Semua">Semua Kelas (7, 8, 9)</option>
+        </select>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn-danger" onclick="resetAttendanceLog()">🔄 Reset Jurnal Absen</button>
+        <button class="btn-success" onclick="exportAbsensi()">📥 Export CSV</button>
+        <button class="btn-secondary" onclick="window.print()">🖨️ Cetak / PDF Laporan</button>
+      </div>
+    </div>
+
+    <div id="printReportHeader" style="margin-top: 15px;">
+      <h3 style="margin-bottom: 5px;">Jurnal Kehadiran Harian (<span id="selectedClassTitle">Kelas 7</span>)</h3>
+      <p style="font-size: 12px; color: #555; margin: 0 0 10px 0;">Tanggal: <span id="currentDateSpan"></span></p>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 40px;">No</th>
+          <th style="width: 70px;">Waktu</th>
+          <th>Nama Peserta Didik</th>
+          <th style="width: 110px;">NISN</th>
+          <th style="width: 50px;">L/P</th>
+          <th style="width: 80px;">Kelas</th>
+          <th style="width: 90px;">Status</th>
+          <th class="no-print" style="width: 100px;">Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="logTable"></tbody>
+    </table>
+
+    <div class="signature-container">
+      <div class="signature-box">
+        <p style="margin: 0;">Mengetahui,</p>
+        <p style="font-weight: bold; margin: 2px 0 0 0;">Kepala Sekolah</p>
+        <div class="signature-space"></div>
+        <p style="font-weight: bold; text-decoration: underline; margin: 0;" id="printNamaKepsek">-</p>
+        <p style="font-size: 12px; margin: 2px 0 0 0;" id="printNipKepsek">NIP. -</p>
+      </div>
+
+      <div class="signature-box">
+        <p style="margin: 0;" id="printKotaTanggal">Kumbung, <span id="signatureDateSpan"></span></p>
+        <p style="font-weight: bold; margin: 2px 0 0 0;" id="printTitleWaliKelas">Wali Kelas</p>
+        <div class="signature-space"></div>
+        <p style="font-weight: bold; text-decoration: underline; margin: 0;" id="printNamaWaliKelas">-</p>
+        <p style="font-size: 12px; margin: 2px 0 0 0;" id="printNipWaliKelas">NIP. -</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TAB UTAMA 2: REKAP ABSENSI ================= -->
+  <div id="rekap-main-tab" class="tab-content">
+    <div class="sub-tabs no-print">
+      <button class="sub-tab-btn active" onclick="switchRekapSubTab('rekap-harian-tab', this)">📅 Rekap Per Hari</button>
+      <button class="sub-tab-btn" onclick="switchRekapSubTab('rekap-bulanan-tab', this)">🗓️ Rekap Per Bulan</button>
+    </div>
+
+    <!-- REKAP PER HARI -->
+    <div id="rekap-harian-tab" class="sub-tab-content active">
+      <div class="section-box no-print">
+        <h3>📅 Filter Rekap Absensi Per Hari</h3>
+        <div class="form-grid-3">
+          <div>
+            <label style="font-size: 12px; font-weight: bold;">Pilih Tanggal:</label>
+            <input type="date" id="rekapHarianDate" onchange="renderRekapHarian()">
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: bold;">Pilih Kelas:</label>
+            <select id="rekapHarianKelas" onchange="renderRekapHarian()">
+              <option value="Semua">Semua Kelas</option>
+              <option value="Kelas 7">Kelas 7</option>
+              <option value="Kelas 8">Kelas 8</option>
+              <option value="Kelas 9">Kelas 9</option>
+            </select>
+          </div>
+          <div style="display: flex; align-items: flex-end; gap: 5px;">
+            <button class="btn-success" onclick="exportRekapHarianCSV()" style="width: 50%;">📥 CSV</button>
+            <button class="btn-secondary" onclick="window.print()" style="width: 50%;">🖨️ Cetak</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-grid">
+        <div class="card-box total">Total Absen<div class="card-number" id="dailyTotalCard">0</div></div>
+        <div class="card-box hadir">Hadir<div class="card-number" id="dailyHadirCard">0</div></div>
+        <div class="card-box sakit">Sakit<div class="card-number" id="dailySakitCard">0</div></div>
+        <div class="card-box izin">Izin<div class="card-number" id="dailyIzinCard">0</div></div>
+        <div class="card-box alpa">Alpa<div class="card-number" id="dailyAlpaCard">0</div></div>
+      </div>
+
+      <h4>📋 Data Absensi Harian: <span id="rekapHarianTitleDate"></span> (<span id="rekapHarianTitleKelas">Semua Kelas</span>)</h4>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 40px;">No</th>
+            <th style="width: 70px;">Waktu</th>
+            <th>Nama Siswa</th>
+            <th style="width: 110px;">NISN</th>
+            <th style="width: 50px;">L/P</th>
+            <th style="width: 80px;">Kelas</th>
+            <th style="width: 90px;">Status</th>
+          </tr>
+        </thead>
+        <tbody id="tableRekapHarian"></tbody>
+      </table>
+    </div>
+
+    <!-- REKAP PER BULAN -->
+    <div id="rekap-bulanan-tab" class="sub-tab-content">
+      <div class="section-box no-print">
+        <h3>🗓️ Filter Rekap Absensi Per Bulan</h3>
+        <div class="form-grid-3">
+          <div>
+            <label style="font-size: 12px; font-weight: bold;">Pilih Bulan & Tahun:</label>
+            <input type="month" id="rekapBulananMonth" onchange="renderRekapBulanan()">
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: bold;">Pilih Kelas:</label>
+            <select id="rekapBulananKelas" onchange="renderRekapBulanan()">
+              <option value="Kelas 7">Kelas 7</option>
+              <option value="Kelas 8">Kelas 8</option>
+              <option value="Kelas 9">Kelas 9</option>
+            </select>
+          </div>
+          <div style="display: flex; align-items: flex-end; gap: 5px;">
+            <button class="btn-success" onclick="exportRekapBulananCSV()" style="width: 50%;">📥 CSV</button>
+            <button class="btn-secondary" onclick="window.print()" style="width: 50%;">🖨️ Cetak</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-grid">
+        <div class="card-box total">Siswa Terdaftar<div class="card-number" id="monthlyStudentsCard">0</div></div>
+        <div class="card-box hadir">Total Hadir<div class="card-number" id="monthlyHadirCard">0</div></div>
+        <div class="card-box sakit">Total Sakit<div class="card-number" id="monthlySakitCard">0</div></div>
+        <div class="card-box izin">Total Izin<div class="card-number" id="monthlyIzinCard">0</div></div>
+        <div class="card-box alpa">Total Alpa<div class="card-number" id="monthlyAlpaCard">0</div></div>
+      </div>
+
+      <h4>📊 Rekapitulasi Kehadiran Bulanan: <span id="rekapBulananTitleMonth"></span> - <span id="rekapBulananTitleKelas">Kelas 7</span></h4>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 35px;">No</th>
+            <th>Nama Peserta Didik</th>
+            <th style="width: 90px;">NISN</th>
+            <th style="width: 45px;">L/P</th>
+            <th style="width: 45px;">Hadir</th>
+            <th style="width: 45px;">Sakit</th>
+            <th style="width: 45px;">Izin</th>
+            <th style="width: 45px;">Alpa</th>
+            <th style="width: 65px;">% Hadir</th>
+            <th style="width: 65px;">% Sakit</th>
+            <th style="width: 65px;">% Izin</th>
+            <th style="width: 65px;">% Alpa</th>
+          </tr>
+        </thead>
+        <tbody id="tableRekapBulanan"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ================= TAB UTAMA 3: DAFTAR PENILAIAN & RAPORT ================= -->
+  <div id="nilai-main-tab" class="tab-content">
+    <div class="section-box no-print">
+      <h3>🎯 Pengelolaan Nilai Siswa & Nilai Akhir Raport</h3>
+      <p style="font-size: 13px; color: #555; margin-bottom: 12px;">
+        <strong>Rumus Pembobotan:</strong> Nilai Akhir = (Rata-rata Tugas × 20%) + (Rata-rata UH × 20%) + (MID × 30%) + (UAS × 30%).
+      </p>
+      <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+        <div style="width: 200px;">
+          <label style="font-size: 12px; font-weight: bold;">Pilih Kelas:</label>
+          <select id="nilaiKelasFilter" onchange="renderGradesTable()">
+            <option value="Kelas 7">Kelas 7</option>
+            <option value="Kelas 8">Kelas 8</option>
+            <option value="Kelas 9">Kelas 9</option>
+          </select>
+        </div>
+        <div style="margin-top: 18px;" class="btn-group">
+          <button class="btn-primary" onclick="saveAllGrades()">💾 Simpan Semua Nilai</button>
+          <button class="btn-success" onclick="exportGradesCSV()">📥 Export CSV Raport</button>
+          <button class="btn-secondary" onclick="window.print()">🖨️ Cetak Raport Kelas</button>
+        </div>
+      </div>
+      <div id="gradeStatusMsg" class="status-info" style="margin-top: 10px;"></div>
+    </div>
+
+    <h4>📋 Leger Nilai & Hasil Akhir Raport - <span id="nilaiKelasTitle">Kelas 7</span></h4>
+    <div style="overflow-x: auto;">
+      <table>
+        <thead>
+          <tr>
+            <th rowspan="2" style="width: 30px;">No</th>
+            <th rowspan="2">Nama Siswa</th>
+            <th rowspan="2" style="width: 80px;">NISN</th>
+            <th colspan="4">Tugas (20%)</th>
+            <th colspan="4">Ulangan Harian (20%)</th>
+            <th rowspan="2" style="width: 55px;">MID (30%)</th>
+            <th rowspan="2" style="width: 55px;">UAS (30%)</th>
+            <th rowspan="2" style="width: 65px; background-color: #28a745;">Nilai Akhir</th>
+            <th rowspan="2" style="width: 45px; background-color: #28a745;">Predikat</th>
+          </tr>
+          <tr>
+            <th style="width: 45px;">T1</th>
+            <th style="width: 45px;">T2</th>
+            <th style="width: 45px;">T3</th>
+            <th style="width: 55px; background-color: #17a2b8;">Rata T</th>
+            <th style="width: 45px;">UH1</th>
+            <th style="width: 45px;">UH2</th>
+            <th style="width: 45px;">UH3</th>
+            <th style="width: 55px; background-color: #17a2b8;">Rata UH</th>
+          </tr>
+        </thead>
+        <tbody id="tableGradesBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ================= TAB UTAMA 4: BACKUP & RESTORE DATA ================= -->
+  <div id="backup-main-tab" class="tab-content no-print">
+    <div class="section-box">
+      <h3>💾 Backup / Cadangkan Data Sistem (Ekspor JSON)</h3>
+      <p style="font-size: 13px; color: #555; margin: 5px 0 15px 0;">
+        Unduh seluruh cadangan data aplikasi (Data Siswa, Absensi, Nilai Raport, & Pengaturan Pejabat) dalam file cadangan <strong>.JSON</strong>.
+      </p>
+      <button class="btn-success" style="padding: 10px 18px; font-size: 14px;" onclick="exportSystemBackup()">💾 Unduh File Cadangan Data (.json)</button>
+    </div>
+
+    <div class="section-box">
+      <h3>📂 Restore / Pulihkan Data Sistem (Impor JSON)</h3>
+      <p style="font-size: 13px; color: #555; margin: 5px 0 15px 0;">
+        Pulihkan seluruh data sistem dari file backup (.json). 
+        <br><strong style="color: #dc3545;">⚠️ Perhatian: Seluruh data aplikasi saat ini akan ditimpa!</strong>
+      </p>
+      <div class="btn-group">
+        <label class="btn-upload btn-warning" style="padding: 10px 18px; font-size: 14px;">
+          📂 Pilih File Cadangan Data (.json)
+          <input type="file" accept=".json" onchange="importSystemBackup(this)">
+        </label>
+      </div>
+      <div id="statusBackupRestore" class="status-info" style="margin-top: 15px; font-size: 14px;"></div>
+    </div>
+  </div>
+
+  <!-- ================= TAB UTAMA 5: PENGATURAN ADMIN ================= -->
+  <div id="kelola-main-tab" class="tab-content no-print">
+    <div id="adminLoginForm" class="login-box">
+      <h3>🔐 Akses Admin Khusus</h3>
+      <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Masukkan password admin untuk mengelola data siswa dan pejabat sekolah.</p>
+      <form onsubmit="handleAdminLogin(event)">
+        <input type="password" id="adminPasswordInput" placeholder="Masukkan Password Admin" required>
+        <button type="submit" class="btn-primary" style="width: 100%; justify-content: center;">🔓 Masuk Admin</button>
+      </form>
+      <div id="loginError" class="status-alert"></div>
+    </div>
+
+    <div id="adminPanel" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <span class="badge Hadir" style="padding: 6px 12px; font-size: 12px;">✅ Mode Admin Aktif</span>
+        <button class="btn-danger" onclick="adminLogout()">🔒 Keluar Admin</button>
+      </div>
+
+      <div class="sub-tabs">
+        <button class="sub-tab-btn active" onclick="switchAdminSubTab('kelola-k7', this)">📁 Upload & Kelola Kelas 7</button>
+        <button class="sub-tab-btn" onclick="switchAdminSubTab('kelola-k8', this)">📁 Upload & Kelola Kelas 8</button>
+        <button class="sub-tab-btn" onclick="switchAdminSubTab('kelola-k9', this)">📁 Upload & Kelola Kelas 9</button>
+        <button class="sub-tab-btn" onclick="switchAdminSubTab('kelola-pejabat', this)">✍️ Data Kepala Sekolah & Wali</button>
+      </div>
+
+      <!-- KELOLA KELAS 7 -->
+      <div id="kelola-k7" class="sub-tab-content active">
+        <div class="section-box">
+          <h3>📂 Upload File CSV Siswa - KELAS 7</h3>
+          <p style="font-size: 13px; color: #555; margin: 5px 0 10px 0;">Format kolom CSV: <em>Nama Siswa, NISN, Jenis Kelamin (L/P)</em>.</p>
+          <div class="btn-group">
+            <label class="btn-upload btn-warning">
+              📂 Choose File CSV Kelas 7
+              <input type="file" accept=".csv" onchange="importCSVPerKelas(this, 'Kelas 7')">
+            </label>
+            <button class="btn-danger" onclick="resetDaftarSiswaPerKelas('Kelas 7')">🗑️ Kosongkan Siswa Kelas 7</button>
+          </div>
+          <div id="statusCsv_Kelas_7" class="status-info"></div>
+        </div>
+
+        <div class="section-box">
+          <h3>➕ Tambah Siswa Manual - KELAS 7</h3>
+          <form onsubmit="handleAddStudentManual(event, 'Kelas 7')">
+            <div class="form-grid-3">
+              <input type="text" id="addNama_Kelas_7" placeholder="Nama Lengkap Siswa" required>
+              <input type="text" id="addNisn_Kelas_7" placeholder="NISN (Opsional)">
+              <select id="addJk_Kelas_7" required>
+                <option value="">-- Gender --</option>
+                <option value="L">Laki-laki (L)</option>
+                <option value="P">Perempuan (P)</option>
+              </select>
+            </div>
+            <button type="submit" class="btn-primary" style="margin-top: 10px;">➕ Tambah Ke Kelas 7</button>
+          </form>
+          <div id="statusAdd_Kelas_7" class="status-info"></div>
+        </div>
+
+        <h4>Daftar Siswa Terdaftar - Kelas 7 (<span id="count_Kelas_7">0</span> Siswa)</h4>
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 50px;">No</th>
+              <th>Nama Siswa</th>
+              <th style="width: 150px;">NISN</th>
+              <th style="width: 80px;">L/P</th>
+              <th style="width: 120px;">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="table_Kelas_7"></tbody>
+        </table>
+      </div>
+
+      <!-- KELOLA KELAS 8 -->
+      <div id="kelola-k8" class="sub-tab-content">
+        <div class="section-box">
+          <h3>📂 Upload File CSV Siswa - KELAS 8</h3>
+          <p style="font-size: 13px; color: #555; margin: 5px 0 10px 0;">Format kolom CSV: <em>Nama Siswa, NISN, Jenis Kelamin (L/P)</em>.</p>
+          <div class="btn-group">
+            <label class="btn-upload btn-warning">
+              📂 Choose File CSV Kelas 8
+              <input type="file" accept=".csv" onchange="importCSVPerKelas(this, 'Kelas 8')">
+            </label>
+            <button class="btn-danger" onclick="resetDaftarSiswaPerKelas('Kelas 8')">🗑️ Kosongkan Siswa Kelas 8</button>
+          </div>
+          <div id="statusCsv_Kelas_8" class="status-info"></div>
+        </div>
+
+        <div class="section-box">
+          <h3>➕ Tambah Siswa Manual - KELAS 8</h3>
+          <form onsubmit="handleAddStudentManual(event, 'Kelas 8')">
+            <div class="form-grid-3">
+              <input type="text" id="addNama_Kelas_8" placeholder="Nama Lengkap Siswa" required>
+              <input type="text" id="addNisn_Kelas_8" placeholder="NISN (Opsional)">
+              <select id="addJk_Kelas_8" required>
+                <option value="">-- Gender --</option>
+                <option value="L">Laki-laki (L)</option>
+                <option value="P">Perempuan (P)</option>
+              </select>
+            </div>
+            <button type="submit" class="btn-primary" style="margin-top: 10px;">➕ Tambah Ke Kelas 8</button>
+          </form>
+          <div id="statusAdd_Kelas_8" class="status-info"></div>
+        </div>
+
+        <h4>Daftar Siswa Terdaftar - Kelas 8 (<span id="count_Kelas_8">0</span> Siswa)</h4>
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 50px;">No</th>
+              <th>Nama Siswa</th>
+              <th style="width: 150px;">NISN</th>
+              <th style="width: 80px;">L/P</th>
+              <th style="width: 120px;">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="table_Kelas_8"></tbody>
+        </table>
+      </div>
+
+      <!-- KELOLA KELAS 9 -->
+      <div id="kelola-k9" class="sub-tab-content">
+        <div class="section-box">
+          <h3>📂 Upload File CSV Siswa - KELAS 9</h3>
+          <p style="font-size: 13px; color: #555; margin: 5px 0 10px 0;">Format kolom CSV: <em>Nama Siswa, NISN, Jenis Kelamin (L/P)</em>.</p>
+          <div class="btn-group">
+            <label class="btn-upload btn-warning">
+              📂 Choose File CSV Kelas 9
+              <input type="file" accept=".csv" onchange="importCSVPerKelas(this, 'Kelas 9')">
+            </label>
+            <button class="btn-danger" onclick="resetDaftarSiswaPerKelas('Kelas 9')">🗑️ Kosongkan Siswa Kelas 9</button>
+          </div>
+          <div id="statusCsv_Kelas_9" class="status-info"></div>
+        </div>
+
+        <div class="section-box">
+          <h3>➕ Tambah Siswa Manual - KELAS 9</h3>
+          <form onsubmit="handleAddStudentManual(event, 'Kelas 9')">
+            <div class="form-grid-3">
+              <input type="text" id="addNama_Kelas_9" placeholder="Nama Lengkap Siswa" required>
+              <input type="text" id="addNisn_Kelas_9" placeholder="NISN (Opsional)">
+              <select id="addJk_Kelas_9" required>
+                <option value="">-- Gender --</option>
+                <option value="L">Laki-laki (L)</option>
+                <option value="P">Perempuan (P)</option>
+              </select>
+            </div>
+            <button type="submit" class="btn-primary" style="margin-top: 10px;">➕ Tambah Ke Kelas 9</button>
+          </form>
+          <div id="statusAdd_Kelas_9" class="status-info"></div>
+        </div>
+
+        <h4>Daftar Siswa Terdaftar - Kelas 9 (<span id="count_Kelas_9">0</span> Siswa)</h4>
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 50px;">No</th>
+              <th>Nama Siswa</th>
+              <th style="width: 150px;">NISN</th>
+              <th style="width: 80px;">L/P</th>
+              <th style="width: 120px;">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="table_Kelas_9"></tbody>
+        </table>
+      </div>
+
+      <!-- PENGATURAN PEJABAT SEKOLAH -->
+      <div id="kelola-pejabat" class="sub-tab-content">
+        <div class="section-box">
+          <h3>✍️ Pengaturan Nama Kepala Sekolah & Wali Kelas</h3>
+          <form id="configForm" onsubmit="saveSchoolConfig(event)">
+            <div style="margin-bottom: 15px;">
+              <h4 style="margin-bottom: 8px;">1. Kepala Sekolah</h4>
+              <div class="form-grid-2">
+                <input type="text" id="cfgNamaKepsek" placeholder="Nama Lengkap & Gelar Kepala Sekolah" required>
+                <input type="text" id="cfgNipKepsek" placeholder="NIP Kepala Sekolah">
+              </div>
+            </div>
+
+            <div>
+              <h4 style="margin-bottom: 8px;">2. Wali Kelas 7, 8, dan 9</h4>
+              <div class="form-grid-2" style="margin-bottom: 10px;">
+                <input type="text" id="cfgNamaWali7" placeholder="Nama Wali Kelas 7" required>
+                <input type="text" id="cfgNipWali7" placeholder="NIP Wali Kelas 7">
+              </div>
+              <div class="form-grid-2" style="margin-bottom: 10px;">
+                <input type="text" id="cfgNamaWali8" placeholder="Nama Wali Kelas 8" required>
+                <input type="text" id="cfgNipWali8" placeholder="NIP Wali Kelas 8">
+              </div>
+              <div class="form-grid-2" style="margin-bottom: 10px;">
+                <input type="text" id="cfgNamaWali9" placeholder="Nama Wali Kelas 9" required>
+                <input type="text" id="cfgNipWali9" placeholder="NIP Wali Kelas 9">
+              </div>
+            </div>
+
+            <button type="submit" class="btn-primary" style="margin-top: 10px;">💾 Simpan Data Pejabat Permanen</button>
+          </form>
+          <div id="configStatus" class="status-info"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL EDIT DATA SISWA -->
+<div id="editStudentModal" class="modal-overlay" style="display: none;">
+  <div class="modal-content">
+    <h3 style="margin-bottom: 15px;">✏️ Edit Data Siswa</h3>
+    <form onsubmit="handleSaveStudentEdit(event)">
+      <input type="hidden" id="editOriginalNama">
+      <input type="hidden" id="editOriginalKelas">
+
+      <div style="margin-bottom: 12px;">
+        <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">Nama Lengkap Siswa:</label>
+        <input type="text" id="editNamaInput" required>
+      </div>
+
+      <div style="margin-bottom: 12px;">
+        <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">NISN:</label>
+        <input type="text" id="editNisnInput" placeholder="Masukkan NISN Siswa">
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <label style="font-size: 12px; font-weight: bold; display: block; margin-bottom: 4px;">Jenis Kelamin (L/P):</label>
+        <select id="editJkInput" required>
+          <option value="L">Laki-laki (L)</option>
+          <option value="P">Perempuan (P)</option>
+        </select>
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button type="button" class="btn-secondary" onclick="closeEditModal()">Batal</button>
+        <button type="submit" class="btn-primary">💾 Simpan Perubahan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const ADMIN_PASSWORD = "B1smill4h@";
+  let isAdminLoggedIn = false;
+  let currentActiveAbsenClass = "Kelas 7";
+
+  const STORAGE_KEY_CONFIG = "absensi_schoolConfig_v3";
+  const STORAGE_KEY_STUDENTS = "absensi_studentList_v3";
+  const STORAGE_KEY_LOGS = "absensi_attendanceLog_v3";
+  const STORAGE_KEY_GRADES = "absensi_studentGrades_v3";
+
+  const defaultSchoolConfig = {
+    namaKepsek: "Dra. Hj. Siti Rahmah, M.Pd.",
+    nipKepsek: "19750812 199903 2 001",
+    waliKelas: {
+      "Kelas 7": { nama: "Ahmad Subagja, S.Pd.", nip: "19820115 200801 1 002" },
+      "Kelas 8": { nama: "Rina Kusuma, S.Pd.", nip: "19850422 201001 2 003" },
+      "Kelas 9": { nama: "Budi Santoso, M.Pd.", nip: "19791103 200501 1 004" }
+    }
+  };
+
+  const defaultStudentList = [
+    { nama: "Abdul Kholil", nisn: "0051234561", jk: "L", kelas: "Kelas 7" },
+    { nama: "Ahmad Hamdan M.", nisn: "0051234562", jk: "L", kelas: "Kelas 7" },
+    { nama: "Citra Lestari", nisn: "0051234563", jk: "P", kelas: "Kelas 7" },
+    { nama: "Egi Hamzani", nisn: "0051234565", jk: "L", kelas: "Kelas 8" },
+    { nama: "Fatin Selvina Utami", nisn: "0051234566", jk: "P", kelas: "Kelas 8" },
+    { nama: "M. Farid Atalla", nisn: "0051234569", jk: "L", kelas: "Kelas 9" },
+    { nama: "Zinuraini Maysila", nisn: "0051234584", jk: "P", kelas: "Kelas 9" }
+  ];
+
+  let schoolConfig = {};
+  let studentList = [];
+  let attendanceLog = [];
+  let studentGrades = {};
+
+  function escapeHtml(text) {
+    if (!text) return '';
+    return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  }
+
+  function getClassIdKey(kelas) {
+    return kelas.replace(/\s+/g, '_');
+  }
+
+  function getTodayISO() {
+    const today = new Date();
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  }
+
+  function getCurrentMonthISO() {
+    const today = new Date();
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+  }
+
+  function loadDataFromStorage() {
+    const savedConfig = localStorage.getItem(STORAGE_KEY_CONFIG);
+    const savedStudents = localStorage.getItem(STORAGE_KEY_STUDENTS);
+    const savedLogs = localStorage.getItem(STORAGE_KEY_LOGS);
+    const savedGrades = localStorage.getItem(STORAGE_KEY_GRADES);
+
+    schoolConfig = savedConfig ? JSON.parse(savedConfig) : JSON.parse(JSON.stringify(defaultSchoolConfig));
+    studentList = savedStudents ? JSON.parse(savedStudents) : JSON.parse(JSON.stringify(defaultStudentList));
+    attendanceLog = savedLogs ? JSON.parse(savedLogs) : [];
+    studentGrades = savedGrades ? JSON.parse(savedGrades) : {};
+
+    if(!schoolConfig.waliKelas) schoolConfig.waliKelas = defaultSchoolConfig.waliKelas;
+
+    if(!savedConfig) localStorage.setItem(STORAGE_KEY_CONFIG, JSON.stringify(schoolConfig));
+    if(!savedStudents) localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(studentList));
+    if(!savedLogs) localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(attendanceLog));
+    if(!savedGrades) localStorage.setItem(STORAGE_KEY_GRADES, JSON.stringify(studentGrades));
+  }
+
+  function saveConfigToStorage() { localStorage.setItem(STORAGE_KEY_CONFIG, JSON.stringify(schoolConfig)); }
+  function saveStudentsToStorage() { localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(studentList)); }
+  function saveLogsToStorage() { localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(attendanceLog)); }
+  function saveGradesToStorage() { localStorage.setItem(STORAGE_KEY_GRADES, JSON.stringify(studentGrades)); }
+
+  function initDates() {
+    const today = new Date();
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    const dateStr = today.toLocaleDateString('id-ID', options);
+    
+    document.getElementById('currentDateSpan').innerText = dateStr;
+    document.getElementById('signatureDateSpan').innerText = dateStr;
+
+    document.getElementById('rekapHarianDate').value = getTodayISO();
+    document.getElementById('rekapBulananMonth').value = getCurrentMonthISO();
+  }
+
+  function switchMainTab(tabId, btn) {
+    document.querySelectorAll('.tabs .tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.container > .tab-content').forEach(c => c.classList.remove('active'));
+    
+    btn.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+
+    if (tabId === 'rekap-main-tab') {
+      renderRekapHarian();
+      renderRekapBulanan();
+    } else if (tabId === 'nilai-main-tab') {
+      renderGradesTable();
+    }
+  }
+
+  function switchAbsenSubTab(subId, btn, targetKelas) {
+    document.querySelectorAll('#absen-main-tab .sub-tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    currentActiveAbsenClass = targetKelas;
+    document.getElementById('absenFormTitle').innerText = `📝 Input Kehadiran Siswa - ${targetKelas}`;
+    
+    populateActiveDatalist();
+    renderAttendanceTable();
+  }
+
+  function switchRekapSubTab(subId, btn) {
+    document.querySelectorAll('#rekap-main-tab .sub-tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#rekap-main-tab .sub-tab-content').forEach(c => c.classList.remove('active'));
+
+    btn.classList.add('active');
+    document.getElementById(subId).classList.add('active');
+
+    if (subId === 'rekap-harian-tab') renderRekapHarian();
+    if (subId === 'rekap-bulanan-tab') renderRekapBulanan();
+  }
+
+  function switchAdminSubTab(subId, btn) {
+    document.querySelectorAll('#adminPanel .sub-tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#adminPanel .sub-tab-content').forEach(c => c.classList.remove('active'));
+
+    btn.classList.add('active');
+    document.getElementById(subId).classList.add('active');
+  }
+
+  function handleAdminLogin(e) {
+    e.preventDefault();
+    const inputPass = document.getElementById('adminPasswordInput').value;
+    const errorDiv = document.getElementById('loginError');
+
+    if (inputPass === ADMIN_PASSWORD) {
+      isAdminLoggedIn = true;
+      document.getElementById('adminLoginForm').style.display = 'none';
+      document.getElementById('adminPanel').style.display = 'block';
+      document.getElementById('adminPasswordInput').value = '';
+      errorDiv.innerText = '';
+      
+      populateConfigForm();
+      renderAllAdminTables();
+    } else {
+      errorDiv.innerText = '❌ Password salah! Silahkan coba lagi.';
+    }
+  }
+
+  function adminLogout() {
+    isAdminLoggedIn = false;
+    document.getElementById('adminLoginForm').style.display = 'block';
+    document.getElementById('adminPanel').style.display = 'none';
+    document.getElementById('loginError').innerText = '';
+  }
+
+  function populateConfigForm() {
+    document.getElementById('cfgNamaKepsek').value = schoolConfig.namaKepsek || '';
+    document.getElementById('cfgNipKepsek').value = schoolConfig.nipKepsek || '';
+    
+    document.getElementById('cfgNamaWali7').value = schoolConfig.waliKelas?.["Kelas 7"]?.nama || '';
+    document.getElementById('cfgNipWali7').value = schoolConfig.waliKelas?.["Kelas 7"]?.nip || '';
+
+    document.getElementById('cfgNamaWali8').value = schoolConfig.waliKelas?.["Kelas 8"]?.nama || '';
+    document.getElementById('cfgNipWali8').value = schoolConfig.waliKelas?.["Kelas 8"]?.nip || '';
+
+    document.getElementById('cfgNamaWali9').value = schoolConfig.waliKelas?.["Kelas 9"]?.nama || '';
+    document.getElementById('cfgNipWali9').value = schoolConfig.waliKelas?.["Kelas 9"]?.nip || '';
+  }
+
+  function saveSchoolConfig(e) {
+    e.preventDefault();
+    if (!isAdminLoggedIn) return;
+
+    if(!schoolConfig.waliKelas) schoolConfig.waliKelas = {};
+
+    schoolConfig.namaKepsek = document.getElementById('cfgNamaKepsek').value.trim();
+    schoolConfig.nipKepsek = document.getElementById('cfgNipKepsek').value.trim();
+
+    schoolConfig.waliKelas["Kelas 7"] = { nama: document.getElementById('cfgNamaWali7').value.trim(), nip: document.getElementById('cfgNipWali7').value.trim() };
+    schoolConfig.waliKelas["Kelas 8"] = { nama: document.getElementById('cfgNamaWali8').value.trim(), nip: document.getElementById('cfgNipWali8').value.trim() };
+    schoolConfig.waliKelas["Kelas 9"] = { nama: document.getElementById('cfgNamaWali9').value.trim(), nip: document.getElementById('cfgNipWali9').value.trim() };
+
+    saveConfigToStorage();
+    updateSignatureBlock();
+    
+    document.getElementById('configStatus').innerText = '✅ Data Pejabat Sekolah Berhasil Disimpan!';
+    setTimeout(() => { document.getElementById('configStatus').innerText = ''; }, 3000);
+  }
+
+  // ================= MODUL PENILAIAN & RAPORT =================
+  function calculateAveragesAndFinal(g) {
+    const t1 = parseFloat(g.t1) || 0, t2 = parseFloat(g.t2) || 0, t3 = parseFloat(g.t3) || 0;
+    const uh1 = parseFloat(g.uh1) || 0, uh2 = parseFloat(g.uh2) || 0, uh3 = parseFloat(g.uh3) || 0;
+    const mid = parseFloat(g.mid) || 0;
+    const uas = parseFloat(g.uas) || 0;
+
+    const avgTugas = (t1 + t2 + t3) / 3;
+    const avgUH = (uh1 + uh2 + uh3) / 3;
+
+    const finalScore = (avgTugas * 0.20) + (avgUH * 0.20) + (mid * 0.30) + (uas * 0.30);
+    
+    return {
+      avgTugas: Math.round(avgTugas),
+      avgUH: Math.round(avgUH),
+      finalScore: Math.round(finalScore)
+    };
+  }
+
+  function getGradePredicate(score) {
+    if (score >= 90) return 'A';
+    if (score >= 80) return 'B';
+    if (score >= 70) return 'C';
+    return 'D';
+  }
+
+  function renderGradesTable() {
+    const targetKelas = document.getElementById('nilaiKelasFilter').value;
+    document.getElementById('nilaiKelasTitle').innerText = targetKelas;
+    
+    const tbody = document.getElementById('tableGradesBody');
+    tbody.innerHTML = '';
+
+    const students = studentList.filter(s => s.kelas === targetKelas);
+
+    if (students.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="15" class="center" style="color: #888;">Belum ada siswa terdaftar di ${targetKelas}.</td></tr>`;
+      return;
+    }
+
+    students.forEach((s, idx) => {
+      const key = `${targetKelas}_${s.nama}`;
+      const g = studentGrades[key] || { t1: 0, t2: 0, t3: 0, uh1: 0, uh2: 0, uh3: 0, mid: 0, uas: 0 };
+      const calc = calculateAveragesAndFinal(g);
+      const predicate = getGradePredicate(calc.finalScore);
+
+      const safeNama = encodeURIComponent(s.nama);
+
+      tbody.innerHTML += `
+        <tr>
+          <td class="center">${idx + 1}</td>
+          <td><strong>${escapeHtml(s.nama)}</strong></td>
+          <td class="center">${escapeHtml(s.nisn || '-')}</td>
+          <td class="center"><input type="number" class="score-input" id="t1_${safeNama}" value="${g.t1}" min="0" max="100" onchange="autoUpdateGradeRow('${safeNama}', '${targetKelas}')"></td>
+          <td class="center"><input type="number" class="score-input" id="t2_${safeNama}" value="${g.t2}" min="0" max="100" onchange="autoUpdateGradeRow('${safeNama}', '${targetKelas}')"></td>
+          <td class="center"><input type="number" class="score-input" id="t3_${safeNama}" value="${g.t3}" min="0" max="100" onchange="autoUpdateGradeRow('${safeNama}', '${targetKelas}')"></td>
+          <td class="center bg-avg"><span id="avgT_${safeNama}">${calc.avgTugas}</span></td>
+          <td class="center"><input type="number" class="score-input" id="uh1_${safeNama}" value="${g.uh1}" min="0" max="100" onchange="autoUpdateGradeRow('${safeNama}', '${targetKelas}')"></td>
+          <td class="center"><input type="number" class="score-input" id="uh2_${safeNama}" value="${g.uh2}" min="0" max="100" onchange="autoUpdateGradeRow('${safeNama}', '${targetKelas}')"></td>
+          <td class="center"><input type="number" class="score-input" id="uh3_${safeNama}" value="${g.uh3}" min="0" max="100" onchange="autoUpdateGradeRow('${safeNama}', '${targetKelas}')"></td>
+          <td class="center bg-avg"><span id="avgUH_${safeNama}">${calc.avgUH}</span></td>
+          <td class="center"><input type="number" class="score-input" id="mid_${safeNama}" value="${g.mid}" min="0" max="100" onchange="autoUpdateGradeRow('${safeNama}', '${targetKelas}')"></td>
+          <td class="center"><input type="number" class="score-input" id="uas_${safeNama}" value="${g.uas}" min="0" max="100" onchange="autoUpdateGradeRow('${safeNama}', '${targetKelas}')"></td>
+          <td class="center"><strong id="final_${safeNama}" style="font-size:14px; color:#28a745;">${calc.finalScore}</strong></td>
+          <td class="center"><span id="pred_${safeNama}" class="badge btn-primary">${predicate}</span></td>
+        </tr>
+      `;
+    });
+  }
+
+  function clampScore(val) {
+    let score = parseFloat(val) || 0;
+    if (score < 0) return 0;
+    if (score > 100) return 100;
+    return score;
+  }
+
+  function autoUpdateGradeRow(encodedNama, targetKelas) {
+    const rawNama = decodeURIComponent(encodedNama);
+    const key = `${targetKelas}_${rawNama}`;
+
+    const g = {
+      t1: clampScore(document.getElementById(`t1_${encodedNama}`).value),
+      t2: clampScore(document.getElementById(`t2_${encodedNama}`).value),
+      t3: clampScore(document.getElementById(`t3_${encodedNama}`).value),
+      uh1: clampScore(document.getElementById(`uh1_${encodedNama}`).value),
+      uh2: clampScore(document.getElementById(`uh2_${encodedNama}`).value),
+      uh3: clampScore(document.getElementById(`uh3_${encodedNama}`).value),
+      mid: clampScore(document.getElementById(`mid_${encodedNama}`).value),
+      uas: clampScore(document.getElementById(`uas_${encodedNama}`).value)
+    };
+
+    studentGrades[key] = g;
+    saveGradesToStorage();
+
+    const calc = calculateAveragesAndFinal(g);
+    const predicate = getGradePredicate(calc.finalScore);
+
+    document.getElementById(`avgT_${encodedNama}`).innerText = calc.avgTugas;
+    document.getElementById(`avgUH_${encodedNama}`).innerText = calc.avgUH;
+    document.getElementById(`final_${encodedNama}`).innerText = calc.finalScore;
+    document.getElementById(`pred_${encodedNama}`).innerText = predicate;
+  }
+
+  function saveAllGrades() {
+    saveGradesToStorage();
+    const msg = document.getElementById('gradeStatusMsg');
+    msg.innerText = '✅ Data nilai berhasil disimpan secara permanen!';
+    setTimeout(() => msg.innerText = '', 3000);
+  }
+
+  function exportGradesCSV() {
+    const targetKelas = document.getElementById('nilaiKelasFilter').value;
+    const students = studentList.filter(s => s.kelas === targetKelas);
+
+    if (students.length === 0) {
+      alert("Tidak ada data siswa untuk diexport!");
+      return;
+    }
+
+    let csv = "No,Nama Siswa,NISN,Kelas,Tugas 1,Tugas 2,Tugas 3,Rata Tugas,UH 1,UH 2,UH 3,Rata UH,MID,UAS,Nilai Akhir,Predikat\n";
+
+    students.forEach((s, idx) => {
+      const key = `${targetKelas}_${s.nama}`;
+      const g = studentGrades[key] || { t1: 0, t2: 0, t3: 0, uh1: 0, uh2: 0, uh3: 0, mid: 0, uas: 0 };
+      const calc = calculateAveragesAndFinal(g);
+      const predicate = getGradePredicate(calc.finalScore);
+
+      csv += `"${idx + 1}","${s.nama.replace(/"/g, '""')}","${s.nisn}","${s.kelas}","${g.t1}","${g.t2}","${g.t3}","${calc.avgTugas}","${g.uh1}","${g.uh2}","${g.uh3}","${calc.avgUH}","${g.mid}","${g.uas}","${calc.finalScore}","${predicate}"\n`;
+    });
+
+    downloadCSV(csv, `Leger_Nilai_Raport_${targetKelas.replace(' ', '_')}.csv`);
+  }
+
+  // ================= LOGIKA BACKUP & RESTORE DATA =================
+  function exportSystemBackup() {
+    const backupData = {
+      version: "3.0",
+      exportedAt: new Date().toISOString(),
+      schoolConfig: schoolConfig,
+      studentList: studentList,
+      attendanceLog: attendanceLog,
+      studentGrades: studentGrades
+    };
+
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `Backup_Sistem_Akademik_${getTodayISO()}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  }
+
+  function importSystemBackup(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (data.studentList && data.attendanceLog && data.schoolConfig) {
+          if (confirm("⚠️ PERINGATAN: Impor data akan menimpa seluruh data sistem saat ini. Lanjutkan?")) {
+            schoolConfig = data.schoolConfig;
+            studentList = data.studentList;
+            attendanceLog = data.attendanceLog;
+            studentGrades = data.studentGrades || {};
+
+            saveConfigToStorage();
+            saveStudentsToStorage();
+            saveLogsToStorage();
+            saveGradesToStorage();
+
+            populateConfigForm();
+            renderAllAdminTables();
+            renderAttendanceTable();
+            renderRekapHarian();
+            renderRekapBulanan();
+            renderGradesTable();
+
+            const statusDiv = document.getElementById('statusBackupRestore');
+            statusDiv.innerText = '✅ Seluruh data berhasil dipulihkan (Restore)!';
+            setTimeout(() => statusDiv.innerText = '', 4000);
+          }
+        } else {
+          alert("❌ Format file backup JSON tidak valid!");
+        }
+      } catch (err) {
+        alert("❌ Gagal membaca file JSON.");
+      }
+      input.value = '';
+    };
+    reader.readAsText(file);
+  }
+
+  function populateActiveDatalist() {
+    const datalist = document.getElementById('activeStudentDatalist');
+    datalist.innerHTML = '';
+
+    const filtered = studentList.filter(s => s.kelas === currentActiveAbsenClass);
+    filtered.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.nama;
+      datalist.appendChild(opt);
+    });
+  }
+
+  function renderAllAdminTables() {
+    ["Kelas 7", "Kelas 8", "Kelas 9"].forEach(k => {
+      const keyStr = getClassIdKey(k);
+      const tbody = document.getElementById(`table_${keyStr}`);
+      const countSpan = document.getElementById(`count_${keyStr}`);
+      if(!tbody) return;
+
+      tbody.innerHTML = '';
+      const list = studentList.filter(s => s.kelas === k);
+      countSpan.innerText = list.length;
+
+      list.forEach((s, idx) => {
+        const safeNama = encodeURIComponent(s.nama);
+        tbody.innerHTML += `
+          <tr>
+            <td class="center">${idx + 1}</td>
+            <td><strong>${escapeHtml(s.nama)}</strong></td>
+            <td class="center">${escapeHtml(s.nisn || '-')}</td>
+            <td class="center">${escapeHtml(s.jk || '-')}</td>
+            <td class="center">
+              <button class="btn-warning" style="padding: 3px 6px; font-size: 11px;" onclick="editStudentByEncoded('${safeNama}', '${k}')">✏️ Edit</button>
+              <button class="btn-danger" style="padding: 3px 6px; font-size: 11px;" onclick="deleteStudentByEncoded('${safeNama}', '${k}')">❌ Hapus</button>
+            </td>
+          </tr>
+        `;
+      });
+    });
+
+    populateActiveDatalist();
+  }
+
+  function editStudentByEncoded(encodedNama, targetKelas) {
+    editStudent(decodeURIComponent(encodedNama), targetKelas);
+  }
+
+  function deleteStudentByEncoded(encodedNama, targetKelas) {
+    deleteStudent(decodeURIComponent(encodedNama), targetKelas);
+  }
+
+  function editStudent(namaSiswa, targetKelas) {
+    if (!isAdminLoggedIn) return;
+
+    const student = studentList.find(s => s.nama === namaSiswa && s.kelas === targetKelas);
+    if (!student) return;
+
+    document.getElementById('editOriginalNama').value = student.nama;
+    document.getElementById('editOriginalKelas').value = student.kelas;
+    document.getElementById('editNamaInput').value = student.nama;
+    document.getElementById('editNisnInput').value = (student.nisn && student.nisn !== '-') ? student.nisn : '';
+    document.getElementById('editJkInput').value = (student.jk === 'P') ? 'P' : 'L';
+
+    document.getElementById('editStudentModal').style.display = 'flex';
+  }
+
+  function closeEditModal() {
+    document.getElementById('editStudentModal').style.display = 'none';
+  }
+
+  function handleSaveStudentEdit(e) {
+    e.preventDefault();
+    if (!isAdminLoggedIn) return;
+
+    const originalNama = document.getElementById('editOriginalNama').value;
+    const originalKelas = document.getElementById('editOriginalKelas').value;
+
+    const newNama = document.getElementById('editNamaInput').value.trim();
+    const newNisn = document.getElementById('editNisnInput').value.trim() || '-';
+    const newJk = document.getElementById('editJkInput').value;
+
+    const student = studentList.find(s => s.nama === originalNama && s.kelas === originalKelas);
+    if (student) {
+      student.nama = newNama;
+      student.nisn = newNisn;
+      student.jk = newJk;
+
+      saveStudentsToStorage();
+      renderAllAdminTables();
+      closeEditModal();
+    }
+  }
+
+  function handleAddStudentManual(e, targetKelas) {
+    e.preventDefault();
+    if (!isAdminLoggedIn) return;
+
+    const keyStr = getClassIdKey(targetKelas);
+    const namaInput = document.getElementById(`addNama_${keyStr}`);
+    const nisnInput = document.getElementById(`addNisn_${keyStr}`);
+    const jkInput = document.getElementById(`addJk_${keyStr}`);
+
+    const nama = namaInput.value.trim();
+    const nisn = nisnInput.value.trim() || "-";
+    const jk = jkInput.value;
+
+    const exists = studentList.some(s => s.nama.toLowerCase() === nama.toLowerCase() && s.kelas === targetKelas);
+    if (exists) {
+      alert(`Siswa bernama "${nama}" sudah ada di ${targetKelas}!`);
+      return;
+    }
+
+    studentList.push({ nama, nisn, jk, kelas: targetKelas });
+    saveStudentsToStorage();
+    renderAllAdminTables();
+
+    const statusDiv = document.getElementById(`statusAdd_${keyStr}`);
+    if (statusDiv) {
+      statusDiv.innerText = `✅ "${nama}" berhasil ditambahkan ke ${targetKelas}!`;
+      setTimeout(() => statusDiv.innerText = '', 3000);
+    }
+
+    namaInput.value = '';
+    nisnInput.value = '';
+    jkInput.value = '';
+  }
+
+  function deleteStudent(namaSiswa, targetKelas) {
+    if (!isAdminLoggedIn) return;
+    if (confirm(`Hapus ${namaSiswa} dari ${targetKelas}?`)) {
+      studentList = studentList.filter(s => !(s.nama === namaSiswa && s.kelas === targetKelas));
+      saveStudentsToStorage();
+      renderAllAdminTables();
+    }
+  }
+
+  function importCSVPerKelas(input, targetKelas) {
+    if (!isAdminLoggedIn) return;
+    const file = input.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const text = e.target.result;
+      const lines = text.split('\n');
+      
+      studentList = studentList.filter(s => s.kelas !== targetKelas);
+      let importedCount = 0;
+
+      lines.forEach((line, index) => {
+        if (line.trim() === '') return;
+        const cols = line.split(',').map(c => c.replace(/"/g, '').trim());
+        
+        if (index === 0 && (cols[0].toLowerCase().includes('nama') || cols[0].toLowerCase().includes('no'))) return;
+
+        let nama = "", nisn = "-", jk = "-";
+        
+        if (isNaN(cols[0]) && cols[0].length > 0) {
+          nama = cols[0] || "";
+          nisn = cols[1] || "-";
+          jk = cols[2] || "-";
+        } else {
+          nama = cols[1] || "";
+          nisn = cols[2] || "-";
+          jk = cols[3] || "-";
+        }
+
+        if (nama) {
+          studentList.push({ nama, nisn, jk, kelas: targetKelas });
+          importedCount++;
+        }
+      });
+
+      saveStudentsToStorage();
+      renderAllAdminTables();
+
+      const keyStr = getClassIdKey(targetKelas);
+      const statusDiv = document.getElementById(`statusCsv_${keyStr}`);
+      if(statusDiv) {
+        statusDiv.innerText = `✅ Berhasil mengimpor ${importedCount} siswa ke ${targetKelas}!`;
+        setTimeout(() => statusDiv.innerText = '', 3000);
+      }
+      input.value = '';
+    };
+    reader.readAsText(file);
+  }
+
+  function resetDaftarSiswaPerKelas(targetKelas) {
+    if (!isAdminLoggedIn) return;
+    if (confirm(`Yakin ingin menghapus seluruh data siswa di ${targetKelas}?`)) {
+      studentList = studentList.filter(s => s.kelas !== targetKelas);
+      saveStudentsToStorage();
+      renderAllAdminTables();
+
+      const keyStr = getClassIdKey(targetKelas);
+      const statusDiv = document.getElementById(`statusCsv_${keyStr}`);
+      if(statusDiv) {
+        statusDiv.innerText = `⚠️ Data siswa ${targetKelas} telah dikosongkan.`;
+        setTimeout(() => statusDiv.innerText = '', 3000);
+      }
+    }
+  }
+
+  function handleSaveAttendance(e) {
+    e.preventDefault();
+    const nameInput = document.getElementById('fullNameInput').value.trim();
+    const status = document.getElementById('statusInput').value;
+    const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    const todayIso = getTodayISO();
+
+    const studentInfo = studentList.find(s => s.nama.toLowerCase() === nameInput.toLowerCase() && s.kelas === currentActiveAbsenClass) 
+                        || { nama: nameInput, nisn: "-", jk: "-", kelas: currentActiveAbsenClass };
+
+    attendanceLog.unshift({ 
+      id: Date.now() + Math.random(),
+      tanggal: todayIso,
+      waktu: time, 
+      nama: studentInfo.nama, 
+      nisn: studentInfo.nisn, 
+      jk: studentInfo.jk, 
+      kelas: currentActiveAbsenClass,
+      status: status 
+    });
+
+    saveLogsToStorage();
+    renderAttendanceTable();
+    document.getElementById('fullNameInput').value = '';
+  }
+
+  function editAttendanceRecord(id) {
+    const record = attendanceLog.find(item => item.id === id);
+    if (!record) return;
+
+    const newStatus = prompt(`Ubah status kehadiran untuk "${record.nama}" (Pilihan: Hadir, Izin, Sakit, Alpa):`, record.status);
+    
+    if (newStatus !== null) {
+      const formattedStatus = newStatus.trim();
+      const validStatuses = ['Hadir', 'Izin', 'Sakit', 'Alpa'];
+      const matched = validStatuses.find(s => s.toLowerCase() === formattedStatus.toLowerCase());
+      
+      if (matched) {
+        record.status = matched;
+        saveLogsToStorage();
+        renderAttendanceTable();
+      } else {
+        alert("⚠️ Status tidak valid!");
+      }
+    }
+  }
+
+  function deleteAttendanceRecord(id) {
+    const record = attendanceLog.find(item => item.id === id);
+    if (!record) return;
+
+    if (confirm(`Batalkan / Hapus absensi untuk "${record.nama}"?`)) {
+      attendanceLog = attendanceLog.filter(item => item.id !== id);
+      saveLogsToStorage();
+      renderAttendanceTable();
+    }
+  }
+
+  function resetAttendanceLog() {
+    const filterType = document.getElementById('journalViewFilter').value;
+    const targetKelasText = (filterType === "Aktif") ? currentActiveAbsenClass : "SEMUA KELAS (7, 8, 9)";
+
+    if (confirm(`⚠️ Apakah Anda yakin ingin menghapus seluruh jurnal absensi untuk ${targetKelasText}?`)) {
+      if (filterType === "Aktif") {
+        attendanceLog = attendanceLog.filter(item => item.kelas !== currentActiveAbsenClass);
+      } else {
+        attendanceLog = [];
+      }
+      saveLogsToStorage();
+      renderAttendanceTable();
+    }
+  }
+
+  function renderAttendanceTable() {
+    const filterType = document.getElementById('journalViewFilter').value;
+    const tbody = document.getElementById('logTable');
+    tbody.innerHTML = '';
+
+    const filteredLogs = (filterType === "Aktif") 
+      ? attendanceLog.filter(a => a.kelas === currentActiveAbsenClass) 
+      : attendanceLog;
+
+    document.getElementById('selectedClassTitle').innerText = (filterType === "Aktif") ? currentActiveAbsenClass : "Semua Kelas";
+
+    filteredLogs.forEach((item, idx) => {
+      tbody.innerHTML += `
+        <tr>
+          <td class="center">${filteredLogs.length - idx}</td>
+          <td class="center">${item.waktu}</td>
+          <td><strong>${escapeHtml(item.nama)}</strong></td>
+          <td class="center">${escapeHtml(item.nisn)}</td>
+          <td class="center">${escapeHtml(item.jk)}</td>
+          <td class="center"><span class="badge btn-secondary">${item.kelas}</span></td>
+          <td class="center"><span class="badge ${item.status}">${item.status}</span></td>
+          <td class="center no-print">
+            <button class="btn-warning" style="padding: 2px 6px; font-size: 11px;" title="Edit Status" onclick="editAttendanceRecord(${item.id})">✏️ Edit</button>
+            <button class="btn-danger" style="padding: 2px 6px; font-size: 11px;" title="Hapus Absen Ini" onclick="deleteAttendanceRecord(${item.id})">🗑️</button>
+          </td>
+        </tr>
+      `;
+    });
+
+    updateSignatureBlock();
+  }
+
+  function renderRekapHarian() {
+    const selectedDate = document.getElementById('rekapHarianDate').value;
+    const selectedKelas = document.getElementById('rekapHarianKelas').value;
+    const tbody = document.getElementById('tableRekapHarian');
+
+    document.getElementById('rekapHarianTitleDate').innerText = selectedDate ? new Date(selectedDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-';
+    document.getElementById('rekapHarianTitleKelas').innerText = selectedKelas;
+
+    let filtered = attendanceLog.filter(a => a.tanggal === selectedDate);
+    if (selectedKelas !== 'Semua') filtered = filtered.filter(a => a.kelas === selectedKelas);
+
+    let h = 0, s = 0, i = 0, a = 0;
+    filtered.forEach(item => {
+      if (item.status === 'Hadir') h++;
+      else if (item.status === 'Sakit') s++;
+      else if (item.status === 'Izin') i++;
+      else if (item.status === 'Alpa') a++;
+    });
+
+    document.getElementById('dailyTotalCard').innerText = filtered.length;
+    document.getElementById('dailyHadirCard').innerText = h;
+    document.getElementById('dailySakitCard').innerText = s;
+    document.getElementById('dailyIzinCard').innerText = i;
+    document.getElementById('dailyAlpaCard').innerText = a;
+
+    tbody.innerHTML = '';
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" class="center" style="color: #888;">Tidak ada data absensi untuk tanggal dan kelas ini.</td></tr>`;
+      return;
+    }
+
+    filtered.forEach((item, idx) => {
+      tbody.innerHTML += `
+        <tr>
+          <td class="center">${idx + 1}</td>
+          <td class="center">${item.waktu || '-'}</td>
+          <td><strong>${escapeHtml(item.nama)}</strong></td>
+          <td class="center">${escapeHtml(item.nisn || '-')}</td>
+          <td class="center">${escapeHtml(item.jk || '-')}</td>
+          <td class="center">${item.kelas}</td>
+          <td class="center"><span class="badge ${item.status}">${item.status}</span></td>
+        </tr>
+      `;
+    });
+  }
+
+  function exportRekapHarianCSV() {
+    const selectedDate = document.getElementById('rekapHarianDate').value;
+    const selectedKelas = document.getElementById('rekapHarianKelas').value;
+    let filtered = attendanceLog.filter(a => a.tanggal === selectedDate);
+    if (selectedKelas !== 'Semua') filtered = filtered.filter(a => a.kelas === selectedKelas);
+
+    if (filtered.length === 0) {
+      alert("Tidak ada data rekap harian untuk diexport!");
+      return;
+    }
+
+    let csv = "No,Waktu,Nama Siswa,NISN,Jenis Kelamin,Kelas,Status\n";
+    filtered.forEach((item, idx) => {
+      csv += `"${idx + 1}","${item.waktu || ''}","${item.nama.replace(/"/g, '""')}","${item.nisn}","${item.jk}","${item.kelas}","${item.status}"\n`;
+    });
+
+    downloadCSV(csv, `Rekap_Harian_${selectedKelas.replace(' ', '_')}_${selectedDate}.csv`);
+  }
+
+  function renderRekapBulanan() {
+    const selectedMonth = document.getElementById('rekapBulananMonth').value;
+    const selectedKelas = document.getElementById('rekapBulananKelas').value;
+    const tbody = document.getElementById('tableRekapBulanan');
+
+    document.getElementById('rekapBulananTitleMonth').innerText = selectedMonth ? new Date(selectedMonth + '-01').toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) : '-';
+    document.getElementById('rekapBulananTitleKelas').innerText = selectedKelas;
+
+    const students = studentList.filter(s => s.kelas === selectedKelas);
+    const logsInMonth = attendanceLog.filter(a => a.tanggal && a.tanggal.startsWith(selectedMonth) && a.kelas === selectedKelas);
+
+    let totH = 0, totS = 0, totI = 0, totA = 0;
+
+    tbody.innerHTML = '';
+    if (students.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="12" class="center" style="color: #888;">Belum ada siswa terdaftar di ${selectedKelas}.</td></tr>`;
+      return;
+    }
+
+    students.forEach((s, idx) => {
+      const studentLogs = logsInMonth.filter(l => l.nama.toLowerCase() === s.nama.toLowerCase());
+      
+      const h = studentLogs.filter(l => l.status === 'Hadir').length;
+      const sakit = studentLogs.filter(l => l.status === 'Sakit').length;
+      const izin = studentLogs.filter(l => l.status === 'Izin').length;
+      const alpa = studentLogs.filter(l => l.status === 'Alpa').length;
+      
+      totH += h; totS += sakit; totI += izin; totA += alpa;
+
+      const totalAbsenRecorded = h + sakit + izin + alpa;
+      
+      const pctHadir = totalAbsenRecorded > 0 ? ((h / totalAbsenRecorded) * 100).toFixed(1) + '%' : '0%';
+      const pctSakit = totalAbsenRecorded > 0 ? ((sakit / totalAbsenRecorded) * 100).toFixed(1) + '%' : '0%';
+      const pctIzin = totalAbsenRecorded > 0 ? ((izin / totalAbsenRecorded) * 100).toFixed(1) + '%' : '0%';
+      const pctAlpa = totalAbsenRecorded > 0 ? ((alpa / totalAbsenRecorded) * 100).toFixed(1) + '%' : '0%';
+
+      tbody.innerHTML += `
+        <tr>
+          <td class="center">${idx + 1}</td>
+          <td><strong>${escapeHtml(s.nama)}</strong></td>
+          <td class="center">${escapeHtml(s.nisn || '-')}</td>
+          <td class="center">${escapeHtml(s.jk || '-')}</td>
+          <td class="center" style="color: #28a745; font-weight: bold;">${h}</td>
+          <td class="center" style="color: #17a2b8; font-weight: bold;">${sakit}</td>
+          <td class="center" style="color: #ffc107; font-weight: bold;">${izin}</td>
+          <td class="center" style="color: #dc3545; font-weight: bold;">${alpa}</td>
+          <td class="center"><strong style="color: #28a745;">${pctHadir}</strong></td>
+          <td class="center"><strong style="color: #17a2b8;">${pctSakit}</strong></td>
+          <td class="center"><strong style="color: #b78a00;">${pctIzin}</strong></td>
+          <td class="center"><strong style="color: #dc3545;">${pctAlpa}</strong></td>
+        </tr>
+      `;
+    });
+
+    const grandTotalLogs = totH + totS + totI + totA;
+    const totalPctHadir = grandTotalLogs > 0 ? ((totH / grandTotalLogs) * 100).toFixed(1) : '0';
+    const totalPctSakit = grandTotalLogs > 0 ? ((totS / grandTotalLogs) * 100).toFixed(1) : '0';
+    const totalPctIzin = grandTotalLogs > 0 ? ((totI / grandTotalLogs) * 100).toFixed(1) : '0';
+    const totalPctAlpa = grandTotalLogs > 0 ? ((totA / grandTotalLogs) * 100).toFixed(1) : '0';
+
+    document.getElementById('monthlyStudentsCard').innerText = students.length;
+    document.getElementById('monthlyHadirCard').innerHTML = `${totH} <div style="font-size:11px; font-weight:normal;">(${totalPctHadir}%)</div>`;
+    document.getElementById('monthlySakitCard').innerHTML = `${totS} <div style="font-size:11px; font-weight:normal;">(${totalPctSakit}%)</div>`;
+    document.getElementById('monthlyIzinCard').innerHTML = `${totI} <div style="font-size:11px; font-weight:normal;">(${totalPctIzin}%)</div>`;
+    document.getElementById('monthlyAlpaCard').innerHTML = `${totA} <div style="font-size:11px; font-weight:normal;">(${totalPctAlpa}%)</div>`;
+  }
+
+  function exportRekapBulananCSV() {
+    const selectedMonth = document.getElementById('rekapBulananMonth').value;
+    const selectedKelas = document.getElementById('rekapBulananKelas').value;
+    const students = studentList.filter(s => s.kelas === selectedKelas);
+    const logsInMonth = attendanceLog.filter(a => a.tanggal && a.tanggal.startsWith(selectedMonth) && a.kelas === selectedKelas);
+
+    if (students.length === 0) {
+      alert("Tidak ada siswa terdaftar untuk diexport!");
+      return;
+    }
+
+    let csv = "No,Nama Peserta Didik,NISN,Jenis Kelamin,Hadir,Sakit,Izin,Alpa,% Hadir,% Sakit,% Izin,% Alpa\n";
+    students.forEach((s, idx) => {
+      const studentLogs = logsInMonth.filter(l => l.nama.toLowerCase() === s.nama.toLowerCase());
+      const h = studentLogs.filter(l => l.status === 'Hadir').length;
+      const sakit = studentLogs.filter(l => l.status === 'Sakit').length;
+      const izin = studentLogs.filter(l => l.status === 'Izin').length;
+      const alpa = studentLogs.filter(l => l.status === 'Alpa').length;
+      
+      const totalAbsen = h + sakit + izin + alpa;
+      const pctHadir = totalAbsen > 0 ? ((h / totalAbsen) * 100).toFixed(1) + '%' : '0%';
+      const pctSakit = totalAbsen > 0 ? ((sakit / totalAbsen) * 100).toFixed(1) + '%' : '0%';
+      const pctIzin = totalAbsen > 0 ? ((izin / totalAbsen) * 100).toFixed(1) + '%' : '0%';
+      const pctAlpa = totalAbsen > 0 ? ((alpa / totalAbsen) * 100).toFixed(1) + '%' : '0%';
+
+      csv += `"${idx + 1}","${s.nama.replace(/"/g, '""')}","${s.nisn}","${s.jk}","${h}","${sakit}","${izin}","${alpa}","${pctHadir}","${pctSakit}","${pctIzin}","${pctAlpa}"\n`;
+    });
+
+    downloadCSV(csv, `Rekap_Bulanan_${selectedKelas.replace(' ', '_')}_${selectedMonth}.csv`);
+  }
+
+  function downloadCSV(csvContent, fileName) {
+    const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute("download", fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  function updateSignatureBlock() {
+    const filterType = document.getElementById('journalViewFilter').value;
+
+    document.getElementById('printNamaKepsek').innerText = schoolConfig.namaKepsek || '-';
+    document.getElementById('printNipKepsek').innerText = schoolConfig.nipKepsek ? `NIP. ${schoolConfig.nipKepsek}` : '';
+
+    if (filterType === "Semua") {
+      document.getElementById('printTitleWaliKelas').innerText = "Wali Kelas";
+      document.getElementById('printNamaWaliKelas').innerText = "(Tampilan Semua Kelas)";
+      document.getElementById('printNipWaliKelas').innerText = "";
+    } else {
+      const wali = schoolConfig.waliKelas ? schoolConfig.waliKelas[currentActiveAbsenClass] : null;
+      document.getElementById('printTitleWaliKelas').innerText = `Wali ${currentActiveAbsenClass}`;
+      document.getElementById('printNamaWaliKelas').innerText = wali ? wali.nama : "-";
+      document.getElementById('printNipWaliKelas').innerText = (wali && wali.nip) ? `NIP. ${wali.nip}` : '';
+    }
+  }
+
+  function exportAbsensi() {
+    const filterType = document.getElementById('journalViewFilter').value;
+    const filteredLogs = (filterType === "Aktif") ? attendanceLog.filter(a => a.kelas === currentActiveAbsenClass) : attendanceLog;
+
+    if (filteredLogs.length === 0) {
+      alert("Belum ada data absensi untuk di-export.");
+      return;
+    }
+
+    let csv = "No,Tanggal,Waktu,Nama Peserta Didik,NISN,Jenis Kelamin,Kelas,Status Kehadiran\n";
+    filteredLogs.forEach((item, index) => {
+      csv += `"${index + 1}","${item.tanggal || ''}","${item.waktu}","${item.nama.replace(/"/g, '""')}","${item.nisn}","${item.jk}","${item.kelas}","${item.status}"\n`;
+    });
+    
+    downloadCSV(csv, `Journal_Absensi_${currentActiveAbsenClass.replace(' ', '_')}_${getTodayISO()}.csv`);
+  }
+
+  loadDataFromStorage();
+  initDates();
+  populateActiveDatalist();
+  renderAttendanceTable();
+  renderGradesTable();
+</script>
+
+</body>
+</html>
