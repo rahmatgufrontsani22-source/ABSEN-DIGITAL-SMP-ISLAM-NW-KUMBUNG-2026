@@ -108,6 +108,7 @@
 
     .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .form-grid-3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; }
+    .form-grid-4 { display: grid; grid-template-columns: 1.5fr 1.5fr 1fr 1fr; gap: 10px; }
 
     label { color: var(--ink-600); }
 
@@ -242,10 +243,10 @@
       h3 { font-size: 14px; padding-left: 10px; }
       h4 { font-size: 13px; }
 
+      .form-grid-4 { grid-template-columns: 1fr; }
       .form-grid-3 { grid-template-columns: 1fr; }
       .form-grid-2 { grid-template-columns: 1fr; }
 
-      /* Scrollable pill-style tab bar instead of wrapping */
       .tabs {
         flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch;
         justify-content: flex-start; padding: 6px; gap: 4px;
@@ -266,7 +267,6 @@
       .btn-group { gap: 8px; }
       .btn-group button, .btn-group .btn-upload { flex: 1 1 auto; min-width: 0; font-size: 12px; padding: 10px 12px; justify-content: center; }
 
-      /* Tables scroll horizontally instead of squeezing */
       table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 10px; }
       table thead, table tbody { display: table; width: 100%; }
       table { min-width: 100%; }
@@ -287,7 +287,6 @@
       .signature-container { flex-direction: column; align-items: center; gap: 26px; margin-top: 30px; padding: 0; }
       .signature-box { width: 100%; max-width: 260px; }
 
-      /* header crest */
       .header-crest { width: 42px !important; height: 42px !important; font-size: 20px !important; margin-bottom: 8px !important; }
     }
 
@@ -329,9 +328,21 @@
     </div>
 
     <div class="section-box no-print">
-      <h3 id="absenFormTitle">📝 Input Kehadiran Siswa - Kelas 7</h3>
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+        <h3 id="absenFormTitle" style="margin-bottom: 0;">📝 Input Kehadiran Siswa - Kelas 7</h3>
+        <!-- TOMBOL BARU: HADIRKAN SEMUA SISWA SEKALIGUS -->
+        <button type="button" class="btn-success" onclick="markAllPresent()" style="padding: 8px 14px; font-size: 12px;">
+          ✨ Hadirkan Semua Siswa
+        </button>
+      </div>
+
       <form id="attendanceForm" onsubmit="handleSaveAttendance(event)">
-        <div class="form-grid-3">
+        <div class="form-grid-4">
+          <div>
+            <label style="font-size: 12px; font-weight: bold;">Pilih Tanggal Absen:</label>
+            <input type="date" id="attendanceDateInput" required>
+          </div>
+
           <div>
             <label style="font-size: 12px; font-weight: bold;">Pilih Nama Siswa:</label>
             <input list="activeStudentDatalist" id="fullNameInput" placeholder="Ketik / Pilih Nama Siswa..." required autocomplete="off">
@@ -373,13 +384,14 @@
 
     <div id="printReportHeader" style="margin-top: 15px;">
       <h3 style="margin-bottom: 5px;">Jurnal Kehadiran Harian (<span id="selectedClassTitle">Kelas 7</span>)</h3>
-      <p style="font-size: 12px; color: #555; margin: 0 0 10px 0;">Tanggal: <span id="currentDateSpan"></span></p>
+      <p style="font-size: 12px; color: #555; margin: 0 0 10px 0;">Tanggal Cetak: <span id="currentDateSpan"></span></p>
     </div>
 
     <table>
       <thead>
         <tr>
           <th style="width: 40px;">No</th>
+          <th style="width: 90px;">Tanggal</th>
           <th style="width: 70px;">Waktu</th>
           <th>Nama Peserta Didik</th>
           <th style="width: 110px;">NISN</th>
@@ -898,6 +910,14 @@
     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
   }
 
+  function formatDateToIndonesian(isoDateStr) {
+    if (!isoDateStr) return '-';
+    const parts = isoDateStr.split('-');
+    if (parts.length !== 3) return isoDateStr;
+    const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+    return dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
   function loadDataFromStorage() {
     const savedConfig = localStorage.getItem(STORAGE_KEY_CONFIG);
     const savedStudents = localStorage.getItem(STORAGE_KEY_STUDENTS);
@@ -930,7 +950,9 @@
     document.getElementById('currentDateSpan').innerText = dateStr;
     document.getElementById('signatureDateSpan').innerText = dateStr;
 
-    document.getElementById('rekapHarianDate').value = getTodayISO();
+    const todayIso = getTodayISO();
+    document.getElementById('attendanceDateInput').value = todayIso;
+    document.getElementById('rekapHarianDate').value = todayIso;
     document.getElementById('rekapBulananMonth').value = getCurrentMonthISO();
   }
 
@@ -1440,17 +1462,17 @@
 
   function handleSaveAttendance(e) {
     e.preventDefault();
+    const customDate = document.getElementById('attendanceDateInput').value || getTodayISO();
     const nameInput = document.getElementById('fullNameInput').value.trim();
     const status = document.getElementById('statusInput').value;
     const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-    const todayIso = getTodayISO();
 
     const studentInfo = studentList.find(s => s.nama.toLowerCase() === nameInput.toLowerCase() && s.kelas === currentActiveAbsenClass) 
                         || { nama: nameInput, nisn: "-", jk: "-", kelas: currentActiveAbsenClass };
 
     attendanceLog.unshift({ 
       id: Date.now() + Math.random(),
-      tanggal: todayIso,
+      tanggal: customDate,
       waktu: time, 
       nama: studentInfo.nama, 
       nisn: studentInfo.nisn, 
@@ -1464,10 +1486,45 @@
     document.getElementById('fullNameInput').value = '';
   }
 
+  /* FUNGSI BARU: MENANDAI SELURUH SISWA SEBAGAI HADIR DALAM 1 KLIK */
+  function markAllPresent() {
+    const customDate = document.getElementById('attendanceDateInput').value || getTodayISO();
+    const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    const classStudents = studentList.filter(s => s.kelas === currentActiveAbsenClass);
+
+    if (classStudents.length === 0) {
+      alert(`Tidak ada data siswa terdaftar pada ${currentActiveAbsenClass}!`);
+      return;
+    }
+
+    if (confirm(`Tandai seluruh siswa (${classStudents.length} orang) di ${currentActiveAbsenClass} sebagai "Hadir" pada tanggal ${formatDateToIndonesian(customDate)}?`)) {
+      // Mencegah duplikasi: Hapus log absensi siswa pada tanggal dan kelas yang sama jika sudah ada
+      attendanceLog = attendanceLog.filter(log => !(log.tanggal === customDate && log.kelas === currentActiveAbsenClass));
+
+      classStudents.forEach(student => {
+        attendanceLog.unshift({
+          id: Date.now() + Math.random(),
+          tanggal: customDate,
+          waktu: time,
+          nama: student.nama,
+          nisn: student.nisn || "-",
+          jk: student.jk || "-",
+          kelas: currentActiveAbsenClass,
+          status: "Hadir"
+        });
+      });
+
+      saveLogsToStorage();
+      renderAttendanceTable();
+      alert(`✅ Berhasil mencatat kehadiran untuk seluruh siswa ${currentActiveAbsenClass}!`);
+    }
+  }
+
   function editAttendanceRecord(id) {
     const record = attendanceLog.find(item => item.id === id);
     if (!record) return;
 
+    const newDate = prompt(`Ubah tanggal kehadiran (Format: YYYY-MM-DD):`, record.tanggal || getTodayISO());
     const newStatus = prompt(`Ubah status kehadiran untuk "${record.nama}" (Pilihan: Hadir, Izin, Sakit, Alpa):`, record.status);
     
     if (newStatus !== null) {
@@ -1476,6 +1533,7 @@
       const matched = validStatuses.find(s => s.toLowerCase() === formattedStatus.toLowerCase());
       
       if (matched) {
+        if (newDate && newDate.trim() !== "") record.tanggal = newDate.trim();
         record.status = matched;
         saveLogsToStorage();
         renderAttendanceTable();
@@ -1526,6 +1584,7 @@
       tbody.innerHTML += `
         <tr>
           <td class="center">${filteredLogs.length - idx}</td>
+          <td class="center"><strong>${formatDateToIndonesian(item.tanggal)}</strong></td>
           <td class="center">${item.waktu}</td>
           <td><strong>${escapeHtml(item.nama)}</strong></td>
           <td class="center">${escapeHtml(item.nisn)}</td>
@@ -1533,7 +1592,7 @@
           <td class="center"><span class="badge btn-secondary">${item.kelas}</span></td>
           <td class="center"><span class="badge ${item.status}">${item.status}</span></td>
           <td class="center no-print">
-            <button class="btn-warning" style="padding: 2px 6px; font-size: 11px;" title="Edit Status" onclick="editAttendanceRecord(${item.id})">✏️ Edit</button>
+            <button class="btn-warning" style="padding: 2px 6px; font-size: 11px;" title="Edit Status/Tanggal" onclick="editAttendanceRecord(${item.id})">✏️ Edit</button>
             <button class="btn-danger" style="padding: 2px 6px; font-size: 11px;" title="Hapus Absen Ini" onclick="deleteAttendanceRecord(${item.id})">🗑️</button>
           </td>
         </tr>
